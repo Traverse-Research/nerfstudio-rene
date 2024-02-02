@@ -36,6 +36,7 @@ from viser import (
 )
 
 from nerfstudio.cameras.cameras import Cameras, CameraType
+from nerfstudio.utils.rich_utils import CONSOLE
 from nerfstudio.viewer.utils import CameraState, get_camera
 
 if TYPE_CHECKING:
@@ -70,6 +71,8 @@ class ViewerControl:
     def __init__(self):
         # this should be a user-facing constructor, since it will be used inside the model/pipeline class
         self._click_cbs = {}
+        # TODO@ Andrei add it here
+        self.metadata = {}
 
     def _setup(self, viewer: Viewer):
         """
@@ -136,15 +139,32 @@ class ViewerControl:
         from nerfstudio.viewer.viewer import VISER_NERFSTUDIO_SCALE_RATIO
 
         client = clients[client_id]
+        CONSOLE.log(f"HALO client_id {client_id} for client: {client}")
         R = vtf.SO3(wxyz=client.camera.wxyz)
         R = R @ vtf.SO3.from_x_radians(np.pi)
         R = torch.tensor(R.as_matrix())
         pos = torch.tensor(client.camera.position, dtype=torch.float64) / VISER_NERFSTUDIO_SCALE_RATIO
         c2w = torch.concatenate([R, pos[:, None]], dim=1)
         camera_state = CameraState(
-            fov=client.camera.fov, aspect=client.camera.aspect, c2w=c2w, camera_type=CameraType.PERSPECTIVE
+            fov=client.camera.fov,
+            aspect=client.camera.aspect,
+            c2w=c2w,
+            camera_type=CameraType.PERSPECTIVE,
         )
-        return get_camera(camera_state, img_height, img_width)
+        CONSOLE.log(f"HALO get camera {camera_state}")
+        return get_camera(camera_state, img_height, img_width, self.viewer.camera_metadata)
+
+    def set_camera_metadata(self, metadata, client_id: Optional[int] = None):
+        clients = self.viser_server.get_clients()
+        if len(clients) == 0:
+            return None
+        if not client_id:
+            client_id = list(clients.keys())[0]
+        client = clients[client_id]
+        CONSOLE.log(
+            f"HALO client_id {client_id} \n for client: {client} \n\n and metadata: {metadata} for \n {client.camera}"
+        )
+        self.viewer.camera_metadata = metadata
 
     def register_click_cb(self, cb: Callable):
         """

@@ -32,6 +32,7 @@ import nerfstudio.utils.poses as pose_utils
 from nerfstudio.cameras import camera_utils
 from nerfstudio.cameras.rays import RayBundle
 from nerfstudio.data.scene_box import OrientedBox, SceneBox
+from nerfstudio.utils.rich_utils import CONSOLE
 from nerfstudio.utils.tensor_dataclass import TensorDataclass
 
 TORCH_DEVICE = Union[torch.device, str]
@@ -917,7 +918,7 @@ class Cameras(TensorDataclass):
             metadata["directions_norm"] = directions_norm[0].detach()
         else:
             metadata = {"directions_norm": directions_norm[0].detach()}
-
+        #CONSOLE.log(f"Gen Rays with camera {self}") this has light info, i checked
         return RayBundle(
             origins=origins,
             directions=directions,

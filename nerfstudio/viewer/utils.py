@@ -42,7 +42,7 @@ class CameraState:
 
 
 def get_camera(
-    camera_state: CameraState, image_height: int, image_width: Optional[Union[int, float]] = None
+    camera_state: CameraState, image_height: int, image_width: Optional[Union[int, float]] = None, camera_metadata=None
 ) -> Cameras:
     """Returns the camera intrinsics matrix and the camera to world homogeneous matrix.
 
@@ -75,6 +75,7 @@ def get_camera(
         camera_type=camera_state.camera_type,
         camera_to_worlds=camera_state.c2w.to(torch.float32)[None, ...],
         times=torch.tensor([0.0], dtype=torch.float32),
+        metadata=camera_metadata,
     )
     return camera
 

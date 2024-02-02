@@ -35,6 +35,7 @@ from nerfstudio.models.base_model import Model
 from nerfstudio.models.splatfacto import SplatfactoModel
 from nerfstudio.pipelines.base_pipeline import Pipeline
 from nerfstudio.utils.decorators import check_main_thread, decorate_all
+from nerfstudio.utils.rich_utils import CONSOLE
 from nerfstudio.utils.writer import GLOBAL_BUFFER, EventName
 from nerfstudio.viewer.control_panel import ControlPanel
 from nerfstudio.viewer.export_panel import populate_export_tab
@@ -90,6 +91,7 @@ class Viewer:
         self.log_filename = log_filename
         self.datapath = datapath.parent if datapath.is_file() else datapath
         self.include_time = self.pipeline.datamanager.includes_time
+        self.camera_metadata = {}
 
         if self.config.websocket_port is None:
             websocket_port = viewer_utils.get_free_port(default_port=self.config.websocket_port_default)
@@ -337,6 +339,7 @@ class Viewer:
             self.last_move_time = time.time()
             with self.viser_server.atomic():
                 camera_state = self.get_camera_state(client)
+                CONSOLE.log("TODO On camera update change ")
                 self.render_statemachines[client.client_id].action(RenderAction("move", camera_state))
 
     def set_camera_visibility(self, visible: bool) -> None:
@@ -376,6 +379,7 @@ class Viewer:
         clients = self.viser_server.get_clients()
         for id in clients:
             camera_state = self.get_camera_state(clients[id])
+            CONSOLE.log(f"HALO camera moved {camera_state}")
             self.render_statemachines[id].action(RenderAction("move", camera_state))
 
     def _toggle_training_state(self, _) -> None:

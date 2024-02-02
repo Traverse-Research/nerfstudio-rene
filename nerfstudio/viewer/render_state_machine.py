@@ -30,6 +30,7 @@ from nerfstudio.cameras.cameras import Cameras
 from nerfstudio.model_components.renderers import background_color_override_context
 from nerfstudio.models.splatfacto import SplatfactoModel
 from nerfstudio.utils import colormaps, writer
+from nerfstudio.utils.rich_utils import CONSOLE
 from nerfstudio.utils.writer import GLOBAL_BUFFER, EventName, TimeWriter
 from nerfstudio.viewer.utils import CameraState, get_camera
 from nerfstudio.viewer_legacy.server import viewer_utils
@@ -129,7 +130,7 @@ class RenderStateMachine(threading.Thread):
 
         image_height, image_width = self._calculate_image_res(camera_state.aspect)
 
-        camera = get_camera(camera_state, image_height, image_width)
+        camera = get_camera(camera_state, image_height, image_width, self.viewer.camera_metadata)
         camera = camera.to(self.viewer.get_model().device)
         assert isinstance(camera, Cameras)
         assert camera is not None, "render called before viewer connected"
@@ -296,6 +297,8 @@ class RenderStateMachine(threading.Thread):
             if self.viewer.render_tab_state.preview_render
             else 40
         )
+
+        CONSOLE.log(f"We are rerendering with camera at pos{self.client.camera}")
         self.client.set_background_image(
             selected_output,
             format=self.viewer.config.image_format,
